@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { subscribeNewsletter } from "../services/api";
-import "./Home.css";
+import "./home.css";
 
 // swap this for your favorite interior/hero photo
 import heroImg from "/src/assets/cafe/location/interior1.jpg"; // or dining-room.jpg / salmon.jpg
