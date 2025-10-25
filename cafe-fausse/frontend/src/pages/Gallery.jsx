@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from "react";
-import "./Gallery.css";
+import "./gallery.css";
 
 /**
  * Glob all images from any subfolder in /assets/cafe

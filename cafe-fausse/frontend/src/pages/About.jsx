@@ -1,5 +1,5 @@
 import React from "react";
-import "./About.css";
+import "./about.css";
 import mariaImg from "/src/assets/cafe/founders/maria.jpg";
 import rossiImg from "/src/assets/cafe/founders/rossi.jpg";
 

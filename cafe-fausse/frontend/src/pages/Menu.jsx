@@ -1,6 +1,6 @@
 // frontend/src/pages/Menu.jsx
 import React from "react";
-import "./Menu.css";
+import "./menu.css";
 
 // images
 import imgBruschetta from "/src/assets/cafe/Dishes/bruschetta.jpg";
