@@ -3,7 +3,7 @@ import { subscribeNewsletter } from "../services/api";
 import "./home.css";
 
 // swap this for your favorite interior/hero photo
-import heroImg from "/src/assets/cafe/location/interior1.jpg"; // or dining-room.jpg / salmon.jpg
+import heroImg from "/src/assets/cafe/Location/interior1.jpg"; // or dining-room.jpg / salmon.jpg
 
 export default function Home() {
   const [name, setName] = useState("");
