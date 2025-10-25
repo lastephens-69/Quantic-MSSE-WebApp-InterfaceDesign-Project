@@ -67,13 +67,25 @@
 
 .gallery-heading {
   font-family: "Bilbo Swash Caps", cursive;
-  font-size: 1.7rem;
-  text-align: left;
+  font-size: 2.5rem;
+  font-weight: 400;
+  text-align: center;
   color: var(--text-color);
   margin: 0 0 0.75rem 0;
   letter-spacing: 0.2px;
 }
 
+/* Small divider vibe between sections */
+.gallery-section .gallery-heading::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  background: #d8c68a; /* muted gold accent */
+  margin: 0.25rem auto 0.75rem auto;
+  border-radius: 2px;
+  opacity: .6;
+}
 @media (max-width: 560px) {
   .gallery-heading {
     text-align: center;

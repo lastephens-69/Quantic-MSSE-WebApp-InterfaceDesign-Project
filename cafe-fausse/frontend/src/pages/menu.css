@@ -112,7 +112,7 @@
 }
 
 /* Small divider vibe between sections */
-.menu-section:not(:first-of-type) .menu-list::before {
+.menu-section .menu-list::before {
   content: "";
   display: block;
   width: 64px;
