@@ -9,11 +9,14 @@ from sqlalchemy.orm import Session
 from functools import wraps
 from database import Base, engine, get_db, SessionLocal
 from sqlalchemy.orm import joinedload
+from seed_routes import register_seed_routes
+from datetime import datetime, time
 
 load_dotenv()
 
 app = Flask(__name__)
 ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")  # set on Render
+register_seed_routes(app)
 
 # --- CORS (read from env; allow dev; optionally any *.netlify.app) ---
 NETLIFY_URL = os.getenv("NETLIFY_URL", "").rstrip("/")  # e.g. https://cafe-fausse-ls.netlify.app
@@ -197,11 +200,12 @@ def admin_customers():
 @app.get("/api/admin/reservations")
 def admin_reservations():
     with SessionLocal() as db:
+        today = datetime.combine(datetime.today().date(), time.min)
         res_list = (
             db.query(Reservation)
             .options(joinedload(Reservation.customer))
+            .where(Reservation.time_slot >= today)
             .order_by(desc(Reservation.time_slot), desc(Reservation.table_number), desc(Reservation.created_at))
-            .limit(20)
             .all()
         )
         data = []
