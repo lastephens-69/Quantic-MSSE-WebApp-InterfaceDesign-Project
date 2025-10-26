@@ -1,7 +1,7 @@
 const API_BASE = (import.meta.env.VITE_API_URL && import.meta.env.VITE_API_URL.replace(/\/$/, "")) || 'http://localhost:5000/api'
 
 export async function subscribeNewsletter({ name, email, phone }) {
-  const res = await fetch(`${API_BASE}/newsletter`, {
+  const res = await fetch(`${API_BASE}/api/newsletter`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name, email, phone })
@@ -14,7 +14,7 @@ export async function subscribeNewsletter({ name, email, phone }) {
 }
 
 export async function createReservation({ time_slot, guests, name, email, phone }) {
-  const res = await fetch(`${API_BASE}/reservations`, {
+  const res = await fetch(`${API_BASE}/api/reservations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ time_slot, guests, name, email, phone })
