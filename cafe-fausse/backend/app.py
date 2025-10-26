@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*"}})
+CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"], "max_age": 86400}})
 
 # Initialize tables if they don't exist
 Base.metadata.create_all(bind=engine)
