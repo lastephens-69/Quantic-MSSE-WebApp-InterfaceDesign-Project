@@ -120,13 +120,13 @@ Copy the provided `.env.sample` files into `.env`.
 **Windows PowerShell**
 ```powershell
 Copy-Item backend\.env.sample backend\.env
-Copy-Item frontend\.env.sample frontend\.env
+
 ```
 
 **macOS/Linux**
 ```bash
 cp backend/.env.sample backend/.env
-cp frontend/.env.sample frontend/.env
+
 ```
 
 ### 3️⃣ Backend Setup
@@ -160,7 +160,7 @@ The `vite.config.js` includes a proxy for `/api/*` → `http://127.0.0.1:5000` f
 
 | Component | Platform | URL |
 |------------|-----------|-----------------------------|
-| Frontend | Netlify | [https://cafe-fausse.netlify.app](https://cafe-fausse.netlify.app) |
+| Frontend | Netlify | [https://cafe-fausse-ls.netlify.app/](https://cafe-fausse-ls.netlify.app/) |
 | Backend (API) | Render | [https://quantic-msse-webapp-interfacedesign.onrender.com](https://quantic-msse-webapp-interfacedesign.onrender.com) |
 
 > Both are connected with shared API tokens and live database access.
