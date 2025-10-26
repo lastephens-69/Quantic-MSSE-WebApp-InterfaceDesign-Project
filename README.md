@@ -190,14 +190,6 @@ DB_NAME=cafe_fausse
 DATABASE_URL=postgresql+pg8000://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
 ```
 
-### Frontend (`/frontend/.env.sample`)
-```env
-VITE_API_URL=http://localhost:5000
-VITE_ADMIN_TOKEN=dev-secret-123
-```
-
----
-
 ## 📸 Image Credits
 Images were created or curated using **Canva Pro** and organized into subfolders for clear categorization:
 
