@@ -13,11 +13,11 @@ export async function subscribeNewsletter({ name, email, phone }) {
   return res.json()
 }
 
-export async function createReservation({ time_slot, guests, name, email, phone }) {
+export async function createReservation({ time_slot, party_size, name, email, phone }) {
   const res = await fetch(`${API_BASE}/api/reservations`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ time_slot, guests, name, email, phone })
+    body: JSON.stringify({ time_slot, party_size, name, email, phone })
   })
   if (!res.ok) {
     const data = await res.json().catch(() => ({}))

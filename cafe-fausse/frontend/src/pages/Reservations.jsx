@@ -3,7 +3,7 @@ import { createReservation } from '../services/api'
 
 export default function Reservations() {
   const [time, setTime] = useState('')
-  const [guests, setGuests] = useState(2)
+  const [party_size, setPartySize] = useState(2)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [phone, setPhone] = useState('')
@@ -14,9 +14,9 @@ export default function Reservations() {
     e.preventDefault()
     setError(null); setResult(null)
     try {
-      const res = await createReservation({ time_slot: time, guests, name, email, phone })
+      const res = await createReservation({ time_slot: time, party_size, name, email, phone })
       setResult(res.reservation)
-      setTime(''); setGuests(2); setName(''); setEmail(''); setPhone('')
+      setTime(''); setPartySize(2); setName(''); setEmail(''); setPhone('')
     } catch (err) {
       setError(err.message)
     }
@@ -34,7 +34,7 @@ export default function Reservations() {
           </div>
           <div>
             <label>Guests<br/>
-              <input type="number" min="1" value={guests} onChange={(e)=>setGuests(parseInt(e.target.value || '1', 10))} required />
+              <input type="number" min="1" value={party_size} onChange={(e)=>setPartySize(parseInt(e.target.value || '1', 10))} required />
             </label>
           </div>
         </div>

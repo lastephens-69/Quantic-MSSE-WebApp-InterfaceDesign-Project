@@ -12,6 +12,7 @@ class Customer(Base):
     name: Mapped[str] = mapped_column(String)
     email: Mapped[str] = mapped_column(String)
     phone: Mapped[str] = mapped_column(String)
+    newsletter_signup: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
     created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
 
 class Reservation(Base):
@@ -19,8 +20,8 @@ class Reservation(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     customer_id: Mapped[int] = mapped_column(ForeignKey("customers.id"), nullable=False)
     party_size: Mapped[int] = mapped_column(Integer)
-    date: Mapped[Date] = mapped_column(Date)
-    time: Mapped[Time] = mapped_column(Time)
-    created_at: Mapped[DateTime] = mapped_column(DateTime, server_default=func.now())
+    time_slot: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, index=True)
+    table_number: Mapped[int] = mapped_column(Integer, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
     customer: Mapped[Customer] = relationship("Customer")

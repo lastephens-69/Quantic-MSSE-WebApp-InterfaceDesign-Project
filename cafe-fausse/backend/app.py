@@ -1,13 +1,14 @@
 import os, random, re , datetime as dt
 from flask import Flask, jsonify, request
 from flask_cors import CORS
-from sqlalchemy import select, and_
+from sqlalchemy import select, and_, desc
 from dotenv import load_dotenv
 from database import Base, engine, get_db
 from models import Customer, Reservation
 from sqlalchemy.orm import Session
 from functools import wraps
 from database import Base, engine, get_db, SessionLocal
+from sqlalchemy.orm import joinedload
 
 load_dotenv()
 
@@ -76,20 +77,22 @@ def create_reservation():
         time_slot = parse_iso_datetime(time_slot_str)
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+    party_size = int(payload.get("party_size") or 0)
 
-    guests = int(payload.get("guests") or 0)
     name = (payload.get("name") or "").strip()
     email = (payload.get("email") or "").strip().lower()
     phone = (payload.get("phone") or "").strip() or None
 
-    if guests <= 0 or not name or not email or "@" not in email:
-        return jsonify({"error": "Guests must be > 0, and name/email are required"}), 400
+    if party_size <= 0 or not name or not email or "@" not in email:
+        return jsonify({"error": "Party size must be > 0, and name/email are required"}), 400
 
     total_tables = 30
 
     with Session(engine) as db:
         # ensure customer exists (upsert)
         customer = db.scalar(select(Customer).where(Customer.email == email))
+
         if not customer:
             customer = Customer(name=name, email=email, phone=phone, newsletter_signup=False)
             db.add(customer)
@@ -106,7 +109,7 @@ def create_reservation():
         free_tables = [t for t in range(1, total_tables + 1) if t not in taken_set]
         table_number = random.choice(free_tables)
 
-        reservation = Reservation(customer_id=customer.id, time_slot=time_slot, table_number=table_number)
+        reservation = Reservation(customer_id=customer.id, time_slot=time_slot, table_number=table_number,party_size=party_size)
         db.add(reservation)
         db.commit()
 
@@ -116,7 +119,8 @@ def create_reservation():
                 "id": reservation.id,
                 "customer_id": customer.id,
                 "time_slot": time_slot.isoformat(),
-                "table_number": table_number
+                "table_number": table_number,
+                "party_size": party_size
             }
         }), 201
 
@@ -137,7 +141,8 @@ def list_reservations():
             "id": r.id,
             "customer_id": r.customer_id,
             "time_slot": r.time_slot.isoformat(),
-            "table_number": r.table_number
+            "table_number": r.table_number,
+            "party_size": r.party_size
         } for r in rows]
         return jsonify(data), 200
 
@@ -157,7 +162,7 @@ def to_dict_customer(c: Customer):
         "email": c.email,
         "phone": c.phone,
         "newsletter_signup": c.newsletter_signup,
-        "created_at": getattr(c, "created_at", None),
+        "created_at": format_timeslot(c.created_at) if c.created_at else None
     }
 
 def to_dict_reservation(r: Reservation):
@@ -165,7 +170,8 @@ def to_dict_reservation(r: Reservation):
         "id": r.id,
         "Customer_id": r.customer_id,
         "table_number": r.table_number,
-        "time_slot": r.time_slot.isoformat(),   
+        "time_slot": r.time_slot.isoformat(),
+        "party_size": r.party_size,
         "created_at": getattr(r, "created_at", None),
     }
 
@@ -185,15 +191,39 @@ def admin_customers():
         rows = db.execute(
             select(Customer).order_by(Customer.id.desc()).limit(200)
         ).scalars().all()
-        return [to_dict_customer(c) for c in rows]
+        data = [to_dict_customer(c) for c in rows]
+        return jsonify(data)  # <-- always JSON
 
 @app.get("/api/admin/reservations")
 def admin_reservations():
     with SessionLocal() as db:
-        rows = db.execute(
-            select(Reservation).order_by(Reservation.id.desc()).limit(200)
-        ).scalars().all()
-        return [to_dict_reservation(r) for r in rows]
+        res_list = (
+            db.query(Reservation)
+            .options(joinedload(Reservation.customer))
+            .order_by(desc(Reservation.time_slot), desc(Reservation.table_number), desc(Reservation.created_at))
+            .limit(20)
+            .all()
+        )
+        data = []
+        for r in res_list:
+            c = r.customer
+            data.append({
+                "id": r.id,
+                "party_size": r.party_size,
+                "table_number": r.table_number,
+                "time_slot": format_timeslot(r.time_slot),
+                "created_at": format_timeslot(r.created_at) if r.created_at else None,
+                "customer": {
+                    "id": c.id,
+                    "name": c.name,
+                    "email": c.email,
+                    "phone": c.phone,
+                } if c else None
+            })
+        return jsonify(data)
+
+def format_timeslot(dt_obj):
+    return dt_obj.strftime("%Y-%m-%d %H:%M")
 
 
 if __name__ == "__main__":
