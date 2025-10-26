@@ -1,4 +1,4 @@
-import os, random, datetime as dt
+import os, random, re , datetime as dt
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from sqlalchemy import select, and_
@@ -6,6 +6,8 @@ from dotenv import load_dotenv
 from database import Base, engine, get_db
 from models import Customer, Reservation
 from sqlalchemy.orm import Session
+from functools import wraps
+from database import Base, engine, get_db, SessionLocal
 
 load_dotenv()
 
@@ -142,12 +144,57 @@ def list_reservations():
 def admin_required(fn):
     @wraps(fn)
     def wrapper(*args, **kwargs):
-        if not ADMIN_TOKEN:
-            return jsonify({"error": "ADMIN_TOKEN not set"}), 500
-        if request.headers.get("X-Admin-Token") != ADMIN_TOKEN:
-            return jsonify({"error": "unauthorized"}), 401
+        token = request.headers.get("X-Admin-Token")
+        if token != ADMIN_TOKEN:
+            return jsonify({"error": "Unauthorized"}), 401
         return fn(*args, **kwargs)
     return wrapper
+
+def to_dict_customer(c: Customer):
+    return {
+        "id": c.id,
+        "name": c.name,
+        "email": c.email,
+        "phone": c.phone,
+        "newsletter_signup": c.newsletter_signup,
+        "created_at": getattr(c, "created_at", None),
+    }
+
+def to_dict_reservation(r: Reservation):
+    return {
+        "id": r.id,
+        "Customer_id": r.customer_id,
+        "table_number": r.table_number,
+        "time_slot": r.time_slot.isoformat(),   
+        "created_at": getattr(r, "created_at", None),
+    }
+
+@app.get("/api/admin/summary")
+def admin_summary():
+    with SessionLocal() as db:
+        customers = db.execute(select(Customer)).scalars().all()
+        reservations = db.execute(select(Reservation)).scalars().all()
+        return {
+            "customers": len(customers),
+            "reservations": len(reservations)
+        }
+
+@app.get("/api/admin/customers")
+def admin_customers():
+    with SessionLocal() as db:
+        rows = db.execute(
+            select(Customer).order_by(Customer.id.desc()).limit(200)
+        ).scalars().all()
+        return [to_dict_customer(c) for c in rows]
+
+@app.get("/api/admin/reservations")
+def admin_reservations():
+    with SessionLocal() as db:
+        rows = db.execute(
+            select(Reservation).order_by(Reservation.id.desc()).limit(200)
+        ).scalars().all()
+        return [to_dict_reservation(r) for r in rows]
+
 
 if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")

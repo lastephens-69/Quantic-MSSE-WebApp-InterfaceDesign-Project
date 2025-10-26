@@ -8,6 +8,7 @@ import Menu from './pages/Menu.jsx'
 import Reservations from './pages/Reservations.jsx'
 import About from './pages/About.jsx'
 import Gallery from './pages/Gallery.jsx'
+import Admin from './pages/Admin.jsx'
 
 const router = createBrowserRouter([
   {
@@ -18,7 +19,8 @@ const router = createBrowserRouter([
       { path: 'menu', element: <Menu /> },
       { path: 'reservations', element: <Reservations /> },
       { path: 'about', element: <About /> },
-      { path: 'gallery', element: <Gallery /> }
+      { path: 'gallery', element: <Gallery /> },
+      { path: 'admin', element: <Admin /> }
     ]
   }
 ])
