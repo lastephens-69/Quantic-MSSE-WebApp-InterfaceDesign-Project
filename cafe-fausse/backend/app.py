@@ -10,12 +10,22 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 app = Flask(__name__)
-NETLIFY_URL = "https://cafe-fausse.netlify.app"
-allowed_origins = [NETLIFY_URL] if NETLIFY_URL else []
+ADMIN_TOKEN = os.getenv("ADMIN_TOKEN")  # set on Render
+
+# --- CORS (read from env; allow dev; optionally any *.netlify.app) ---
+NETLIFY_URL = os.getenv("NETLIFY_URL", "").rstrip("/")  # e.g. https://cafe-fausse-ls.netlify.app
+
+origins = []
+if NETLIFY_URL:
+    origins.append(NETLIFY_URL)
+# local dev (vite)
+origins.append("http://localhost:5173")
+# optional: allow any Netlify subdomain (uncomment if you want this)
+origins.append(re.compile(r"^https://.*\.netlify\.app$"))
 CORS(app, resources={r"/api/*": {
-    "origins": allowed_origins,
+    "origins": origins,
     "methods": ["GET", "POST", "OPTIONS"],
-    "allow_headers": ["Content-Type"],
+    "allow_headers": ["Content-Type", "X-Admin-Token"],
     "max_age": 86400
 }})
 # Initialize tables if they don't exist
@@ -128,6 +138,16 @@ def list_reservations():
             "table_number": r.table_number
         } for r in rows]
         return jsonify(data), 200
+
+def admin_required(fn):
+    @wraps(fn)
+    def wrapper(*args, **kwargs):
+        if not ADMIN_TOKEN:
+            return jsonify({"error": "ADMIN_TOKEN not set"}), 500
+        if request.headers.get("X-Admin-Token") != ADMIN_TOKEN:
+            return jsonify({"error": "unauthorized"}), 401
+        return fn(*args, **kwargs)
+    return wrapper
 
 if __name__ == "__main__":
     host = os.getenv("HOST", "0.0.0.0")
