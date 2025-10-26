@@ -41,7 +41,7 @@ export default function Admin() {
       )}
 
       <Section title="Latest Reservations">
-        <Table cols={["id","name","email","phone","party_size","date","time","created_at"]} rows={reservations} />
+        <Table cols={["id","customer_id","time_slot","table_number","created_at"]} rows={reservations} />
       </Section>
 
       <Section title="Latest Customers">
