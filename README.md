@@ -37,33 +37,49 @@ Founded in 2010 by **Chef Antonio Rossi** and **restaurateur Maria Lopez**, the 
 ---
 
 ## 🗂️ File Structure
-
+Frontend (/frontend)
 frontend/
+├── public/
+│   └── _redirects
 ├── src/
-│ ├── assets/
-│ │ └── cafe/
-│ │ ├── Dishes/
-│ │ ├── Catering/
-│ │ ├── Location/
-│ │ └── Behind The Scenes/
-│ ├── components/
-│ │ ├── NavBar.jsx
-│ │ ├── Footer.jsx
-│ │ └── ...
-│ ├── pages/
-│ │ ├── Home.jsx / Home.css
-│ │ ├── Menu.jsx / Menu.css
-│ │ ├── Gallery.jsx / Gallery.css
-│ │ ├── Reservations.jsx / Reservations.css
-│ │ └── About.jsx / About.css
-│ ├── services/
-│ │ └── api.js
-│ └── main.jsx
+│   ├── assets/
+│   │   └── cafe/
+│   │       ├── Behind the Scenes/
+│   │       ├── Catering/
+│   │       ├── Dishes/
+│   │       ├── founders/
+│   │       └── Location/
+│   ├── components/
+│   │   ├── footer.css
+│   │   ├── Footer.jsx
+│   │   ├── NavBar.jsx
+│   ├── pages/
+│   │   ├── about.css / About.jsx
+│   │   ├── admin.css / Admin.jsx
+│   │   ├── gallery.css / Gallery.jsx
+│   │   ├── home.css / Home.jsx
+│   │   ├── menu.css / Menu.jsx
+│   │   └── Reservations.jsx
+│   ├── services/
+│   │   └── api.js
+│   ├── App.jsx
+│   ├── main.jsx
+│   ├── styles.css
+│   └── vite.config.js
+├── package.json
+├── package-lock.json
+└── index.html
+
+Backend (/backend)
 backend/
-├── app.js
-├── routes/
-└── db/
-README.md
+├── .env
+├── .env.sample
+├── app.py
+├── database.py
+├── models.py
+├── requirements.txt
+├── schema.sql
+└── package-lock.json
 
 ---
 
@@ -84,23 +100,82 @@ README.md
 ---
 
 ## ⚙️ Running the Project Locally
+1️⃣ Clone the repository
+git clone https://github.com/lastephens-69/Quantic-MSSE-WebApp-InterfaceDesign-Project.git
+cd Quantic-MSSE-WebApp-InterfaceDesign-Project
 
-### 1. Clone or unzip the repository
-```bash
-git clone https://github.com/<your-username>/cafe-fausse.git
-cd cafe-fausse
+2️⃣ Create environment files
 
+Copy the provided .env.sample files into .env:
+
+Windows PowerShell
+
+Copy-Item backend\.env.sample backend\.env
+Copy-Item frontend\.env.sample frontend\.env
+
+
+macOS/Linux
+
+cp backend/.env.sample backend/.env
+cp frontend/.env.sample frontend/.env
+
+3️⃣ Backend Setup
 cd backend
-.\.venv\scripts\activate
+python -m venv .venv
+# Activate the environment
+.\.venv\Scripts\activate      # Windows
+# source .venv/bin/activate   # macOS/Linux
+
 pip install -r requirements.txt
 python app.py
 
-cd ../frontend
+
+Backend runs on:
+http://127.0.0.1:5000
+
+4️⃣ Frontend Setup
+cd frontend
 npm install
 npm run dev
 
-Access the site at http://localhost:5173
 
+Frontend runs on:
+http://localhost:5173
+
+The vite.config.js includes a proxy for /api/* → http://127.0.0.1:5000 for seamless local integration.
+
+---
+🌐 Staging / Demo Sites
+| Component | Platform | URL
+|----|--------------|----------------|
+| Frontend | Netlify | https://cafe-fausse.netlify.app |
+| Backend (API) | Render | https://quantic-msse-webapp-interfacedesign.onrender.com |
+| Both are connected with shared API tokens and live database access. |
+
+---
+🔐 Environment Variables
+Backend (/backend/.env.sample)
+FLASK_ENV=development
+PORT=5000
+
+# CORS / Frontend origin
+NETLIFY_URL=http://localhost:5173
+
+# Admin read-only token
+ADMIN_TOKEN=dev-secret-123
+
+# Database configuration
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=cafe_fausse
+
+DATABASE_URL=postgresql+pg8000://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}
+
+Frontend (/frontend/.env.sample)
+VITE_API_URL=http://localhost:5000
+VITE_ADMIN_TOKEN=dev-secret-123
 
 ---
 ## 📸 Image Credits
