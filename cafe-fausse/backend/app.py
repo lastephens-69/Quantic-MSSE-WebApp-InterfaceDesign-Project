@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 app = Flask(__name__)
-NETLIFY_URL = os.getenv("NETLIFY_URL")  # e.g., https://cafe-fausse.netlify.app
+NETLIFY_URL = https://cafe-fausse.netlify.app"
 allowed_origins = [NETLIFY_URL] if NETLIFY_URL else []
 CORS(app, resources={r"/api/*": {
     "origins": allowed_origins,
