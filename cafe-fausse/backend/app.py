@@ -10,8 +10,14 @@ from sqlalchemy.orm import Session
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/api/*": {"origins": "*", "methods": ["GET", "POST", "OPTIONS"], "allow_headers": ["Content-Type"], "max_age": 86400}})
-
+NETLIFY_URL = os.getenv("NETLIFY_URL")  # e.g., https://cafe-fausse.netlify.app
+allowed_origins = [NETLIFY_URL] if NETLIFY_URL else []
+CORS(app, resources={r"/api/*": {
+    "origins": allowed_origins,
+    "methods": ["GET", "POST", "OPTIONS"],
+    "allow_headers": ["Content-Type"],
+    "max_age": 86400
+}})
 # Initialize tables if they don't exist
 Base.metadata.create_all(bind=engine)
 
