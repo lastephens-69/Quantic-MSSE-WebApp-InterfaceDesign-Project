@@ -2,69 +2,71 @@ import React, { useMemo, useState } from "react";
 import "./gallery.css";
 
 /**
- * Glob all images from any subfolder in /assets/cafe
- * (e.g., Dishes/, Catering/, Location/, Behind The Scenes/, etc.)
+ * Load images from /src/assets/cafe/<Category>/<file>
+ * IMPORTANT:
+ * - We read the GLOB KEY (original path) to derive the category
+ * - We use the GLOB VALUE (hashed URL) to render <img src="...">
  */
-const modules = import.meta.glob("/src/assets/cafe/*/*.{jpg,jpeg,png,webp}", {
-  eager: true,
-  as: "url",
-});
+const RAW = import.meta.glob(
+  "/src/assets/cafe/*/*.{jpg,jpeg,png,webp}",
+  { eager: true, query: "?url", import: "default" }
+);
 
-// Helper: category = the immediate subfolder under /cafe/
-function getCategory(url) {
-  const parts = url.split("/");
-  const idx = parts.indexOf("cafe");
-  // e.g. /src/assets/cafe/Behind%20The%20Scenes/img.jpg -> "Behind%20The%20Scenes"
-  return parts[idx + 1] || "Other";
-}
+// Preferred order for tabs/sections
+const ORDER = ["Location", "Dishes", "Catering", "Behind the Scenes"];
 
-// Helper: pretty display label from folder name
+// Helpers
 function displayLabel(raw) {
-  // decode spaces (%20) and other encodings; then tidy up underscores/hyphens
   return decodeURIComponent(raw).replace(/[_-]+/g, " ").trim();
 }
-
-// 🔒 Desired display order for categories (edit to taste):
-const ORDER = ["Location", "Dishes", "Catering", "Behind The Scenes"];
 
 export default function Gallery() {
   const [active, setActive] = useState(null);
   const [filter, setFilter] = useState("All");
 
-  // Group images by category (folder)
-  const grouped = useMemo(() => {
-    const byCat = {};
-    Object.values(modules)
-      .sort((a, b) => a.localeCompare(b))
-      .forEach((url) => {
-        const rawCat = getCategory(url);
-        (byCat[rawCat] ??= []).push(url);
-      });
-    return byCat;
+  // Normalize into { path, url, category, name }
+  const items = useMemo(() => {
+    return Object.entries(RAW).map(([path, url]) => {
+      // Example path: /src/assets/cafe/Behind%20the%20Scenes/photo.jpg
+      const parts = path.split("/");
+      const idx = parts.indexOf("cafe");
+      const category = decodeURIComponent(parts[idx + 1] || "Other");
+      const file = parts[idx + 2] || "";
+      const name = decodeURIComponent(file.replace(/\.[^.]+$/, ""));
+      return { path, url, category, name };
+    });
   }, []);
 
-  // Build ordered category list for chips:
-  // 1) start with ORDER (only those that exist), 2) then any others alphabetically
+  // Categories from folder names (stable in dev & prod)
   const categories = useMemo(() => {
-    const existing = Object.keys(grouped);
-    const inOrder = ORDER.filter((name) => existing.includes(name));
+    const set = new Set(items.map((i) => i.category));
+    const existing = Array.from(set);
+    const inOrder = ORDER.filter((c) => existing.includes(c));
     const remaining = existing
-      .filter((name) => !ORDER.includes(name))
+      .filter((c) => !ORDER.includes(c))
       .sort((a, b) => displayLabel(a).localeCompare(displayLabel(b)));
     return ["All", ...inOrder, ...remaining];
-  }, [grouped]);
+  }, [items]);
 
-  // Sections to show (respecting the same order logic)
+  // Section data for rendering (All = every category in our order)
   const sections = useMemo(() => {
-    if (filter !== "All") return [[filter, grouped[filter] || []]];
-    const existing = Object.keys(grouped);
-    const inOrder = ORDER.filter((name) => existing.includes(name)).map((name) => [name, grouped[name]]);
+    const byCat = items.reduce((acc, it) => {
+      (acc[it.category] ??= []).push(it);
+      return acc;
+    }, {});
+
+    if (filter !== "All") {
+      return [[filter, byCat[filter] || []]];
+    }
+
+    const existing = Object.keys(byCat);
+    const inOrder = ORDER.filter((c) => existing.includes(c)).map((c) => [c, byCat[c]]);
     const remaining = existing
-      .filter((name) => !ORDER.includes(name))
+      .filter((c) => !ORDER.includes(c))
       .sort((a, b) => displayLabel(a).localeCompare(displayLabel(b)))
-      .map((name) => [name, grouped[name]]);
+      .map((c) => [c, byCat[c]]);
     return [...inOrder, ...remaining];
-  }, [filter, grouped]);
+  }, [items, filter]);
 
   return (
     <div className="card">
@@ -86,21 +88,26 @@ export default function Gallery() {
       </div>
 
       {/* Sections */}
-      {sections.map(([rawCat, urls]) => (
-        <section key={rawCat} className="gallery-section">
-          {filter === "All" && <h3 className="gallery-heading">{displayLabel(rawCat)}</h3>}
+      {sections.map(([cat, rows]) => (
+        <section key={cat} className="gallery-section">
+          {filter === "All" && <h3 className="gallery-heading">{displayLabel(cat)}</h3>}
           <div className="grid-gallery">
-            {urls.map((src, i) => (
-              <img
-                key={src + i}
-                className="gallery-img"
-                src={src}
-                alt={`${displayLabel(rawCat)} ${i + 1}`}
-                loading="lazy"
-                onClick={() => setActive(src)}
-              />
-            ))}
-            {!urls?.length && <p className="empty">No images yet.</p>}
+            {rows.length ? (
+              rows
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map((it, i) => (
+                  <img
+                    key={it.url + i}
+                    className="gallery-img"
+                    src={it.url}
+                    alt={`${displayLabel(cat)} — ${it.name}`}
+                    loading="lazy"
+                    onClick={() => setActive(it.url)}
+                  />
+                ))
+            ) : (
+              <p className="empty">No images yet.</p>
+            )}
           </div>
         </section>
       ))}
